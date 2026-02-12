@@ -78,16 +78,19 @@ This system simulates a real hospital booking platform similar to modern healthc
 
 ## 📂 Project Structure
 
-server/
-├── config/
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── utils/
+## 📁 Project Structure
+
+```
+server
+├── config
+├── controllers
+├── middleware
+├── models
+├── routes
+├── utils
 ├── server.js
 └── .env
-
+```
 
 ---
 
