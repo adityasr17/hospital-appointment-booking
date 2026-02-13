@@ -2,7 +2,11 @@ const generateSlots = (startTime, endTime, breakStart, breakEnd) => {
   const slots = [];
 
   const toMinutes = (time) => {
-    const [hours, minutes] = time.split(":").map(Number);
+    if (!time || typeof time !== 'string') return null;
+    const parts = time.split(":");
+    if (parts.length !== 2) return null; // Invalid format
+    const [hours, minutes] = parts.map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return null;
     return hours * 60 + minutes;
   };
 
@@ -16,15 +20,25 @@ const generateSlots = (startTime, endTime, breakStart, breakEnd) => {
 
   let current = toMinutes(startTime);
   const end = toMinutes(endTime);
-  const breakS = breakStart ? toMinutes(breakStart) : null;
-  const breakE = breakEnd ? toMinutes(breakEnd) : null;
+  let breakS = breakStart ? toMinutes(breakStart) : null;
+  let breakE = breakEnd ? toMinutes(breakEnd) : null;
+
+  if (current === null || end === null) {
+    throw new Error("Invalid start or end time format. Use HH:MM");
+  }
+
+  // If break times are invalid but provided, strict validation should probably fail
+  // But to be consistent with "no break if invalid", we could check if user INTENDED a break.
+  // However, silent failure was the original bug.
+  if (breakStart && breakS === null) throw new Error("Invalid break start time format. Use HH:MM");
+  if (breakEnd && breakE === null) throw new Error("Invalid break end time format. Use HH:MM");
 
   while (current + 15 <= end) {
-    if (breakS && current >= breakS && current < breakE) {
+    if (breakS !== null && breakE !== null && current >= breakS && current < breakE) {
       current += 15;
       continue;
     }
-
+    
     slots.push({
       time: toTimeFormat(current),
       isBooked: false,
