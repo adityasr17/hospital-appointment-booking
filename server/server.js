@@ -41,11 +41,6 @@ io.on("connection", (socket) => {
 
 
 
-server.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
-
-
 app.use(cors());
 app.use(express.json());
 
@@ -54,6 +49,11 @@ app.use("/api/availability", require("./routes/availabilityRoutes"));
 app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/doctor", require("./routes/doctorRoutes"));
+
+
+server.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
 
 
 
