@@ -1,5 +1,8 @@
 const Availability = require("../models/Availability");
 const generateSlots = require("../utils/slotGenerator");
+const { getLock, releaseSlot } = require("../utils/slotLocks");
+
+
 
 exports.createAvailability = async (req, res) => {
   try {
@@ -48,6 +51,15 @@ exports.bookAppointment = async (req, res) => {
   try {
     const { doctorId, date, slotTime } = req.body;
 
+    const key = `${doctorId}_${date}_${slotTime}`;
+
+    const lock = getLock(key);
+
+    if (lock && lock.userId !== req.user.id) {
+      return res.status(400).json({ message: "Slot is temporarily locked by another user" });
+    }
+
+
     const updatedAvailability = await Availability.findOneAndUpdate(
       {
         doctorId,
@@ -69,12 +81,16 @@ exports.bookAppointment = async (req, res) => {
       return res.status(400).json({ message: "Slot already booked" });
     }
 
+    const doctor = await require("../models/User").findById(doctorId);
+
     const appointment = await Appointment.create({
       patientId: req.user.id,
       doctorId,
       date,
       slotTime,
+      amount: doctor.consultationFee || 500
     });
+    releaseSlot(key);
 
     res.status(201).json({
       message: "Appointment booked successfully",
