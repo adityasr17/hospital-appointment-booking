@@ -26,18 +26,23 @@ exports.getAvailability = async (req, res) => {
   try {
     const { doctorId, date } = req.params;
 
+    console.log("getAvailability called with:", { doctorId, date });
+
     const availability = await Availability.findOne({
       doctorId,
       date,
     });
 
     if (!availability) {
+      console.log("No availability document found for", { doctorId, date });
       return res.status(404).json({ message: "No availability found" });
     }
 
     const availableSlots = availability.slots.filter(
       (slot) => !slot.isBooked
     );
+
+    console.log(`Found ${availability.slots.length} total slots, ${availableSlots.length} available`);
 
     res.json(availableSlots);
   } catch (error) {

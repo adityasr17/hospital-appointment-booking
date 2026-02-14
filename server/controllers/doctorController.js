@@ -1,11 +1,16 @@
+const mongoose = require("mongoose");
 const Appointment = require("../models/Appointment");
 
 // 1️⃣ Get all appointments for logged-in doctor
 exports.getDoctorAppointments = async (req, res) => {
   try {
+    console.log("getDoctorAppointments called for doctorId:", req.user.id);
+
     const appointments = await Appointment.find({
       doctorId: req.user.id
     }).sort({ createdAt: -1 });
+
+    console.log(`Found ${appointments.length} appointments for doctor ${req.user.id}`);
 
     res.json(appointments);
 
@@ -20,7 +25,7 @@ exports.getDoctorRevenue = async (req, res) => {
     const result = await Appointment.aggregate([
       {
         $match: {
-          doctorId: req.user._id ? req.user._id : req.user.id,
+          doctorId: new mongoose.Types.ObjectId(req.user.id),
           paymentStatus: "Paid"
         }
       },

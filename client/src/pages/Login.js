@@ -6,61 +6,85 @@ import { jwtDecode } from "jwt-decode";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-  try {
-    const res = await axios.post(
-      "http://localhost:5000/api/auth/login",
-      { email, password }
-    );
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(""); // Clear previous errors
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        { email, password }
+      );
 
-    const token = res.data.token;
-    localStorage.setItem("token", token);
+      const token = res.data.token;
+      localStorage.setItem("token", token);
 
-    const decoded = jwtDecode(token);
+      const decoded = jwtDecode(token);
 
-    if (decoded.role === "doctor") {
-      navigate("/doctor");
-    } else if (decoded.role === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/booking");
+      if (decoded.role === "doctor") {
+        navigate("/doctor");
+      } else if (decoded.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/booking");
+      }
+
+    } catch (error) {
+      setError("Invalid credentials. Please try again.");
     }
-
-  } catch (error) {
-    alert("Login failed");
-  }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-80">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all hover:scale-105 duration-300">
+        <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-800">
+          Welcome Back! 👋
+        </h2>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 mb-3 border rounded"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative mb-4 text-center">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 mb-4 border rounded"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-gray-600 text-sm font-semibold mb-1">Email Address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        <button
-          onClick={handleLogin}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-        >
-          Login
-        </button>
+          <div>
+            <label className="block text-gray-600 text-sm font-semibold mb-1">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <p className="mt-4 text-sm text-center">
-          No account? <Link to="/register" className="text-blue-500">Register</Link>
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-purple-600 transition-all transform hover:-translate-y-1"
+          >
+            Login
+          </button>
+        </form>
+
+        <p className="mt-6 text-sm text-center text-gray-500">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue-600 font-semibold hover:underline">
+            Register here
+          </Link>
         </p>
       </div>
     </div>
