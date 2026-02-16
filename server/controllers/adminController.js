@@ -141,6 +141,10 @@ exports.adminCreateAvailability = async (req, res) => {
     }
 
     const slots = generateSlots(startTime, endTime, breakStart, breakEnd);
+    
+    if (slots.length === 0) {
+      return res.status(400).json({ message: "No slots created. Check start/end times." });
+    }
 
     const availability = await Availability.create({
       doctorId,

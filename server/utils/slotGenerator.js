@@ -30,8 +30,8 @@ const generateSlots = (startTime, endTime, breakStart, breakEnd) => {
   // If break times are invalid but provided, strict validation should probably fail
   // But to be consistent with "no break if invalid", we could check if user INTENDED a break.
   // However, silent failure was the original bug.
-  if (breakStart && breakS === null) throw new Error("Invalid break start time format. Use HH:MM");
-  if (breakEnd && breakE === null) throw new Error("Invalid break end time format. Use HH:MM");
+  if (breakStart && breakStart !== "undefined" && breakStart !== "null" && breakS === null) throw new Error("Invalid break start time format. Use HH:MM");
+  if (breakEnd && breakEnd !== "undefined" && breakEnd !== "null" && breakE === null) throw new Error("Invalid break end time format. Use HH:MM");
 
   while (current + 15 <= end) {
     if (breakS !== null && breakE !== null && current >= breakS && current < breakE) {
