@@ -8,7 +8,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion } from "framer-motion";
 
-const socket = io(process.env.REACT_APP_API_URL);
+const socket = io("http://localhost:5000");
 
 function Booking() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ function Booking() {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/auth/doctors`);
+      const res = await axios.get("http://localhost:5000/api/auth/doctors");
       setDoctors(res.data);
     } catch (err) {
       console.error("Failed to fetch doctors");
@@ -67,7 +67,7 @@ function Booking() {
   const fetchSlots = async () => {
     try {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/availability/${selectedDoctor}/${formattedDate}`
+        `http://localhost:5000/api/availability/${selectedDoctor}/${formattedDate}`
       );
       setSlots(res.data);
     } catch (err) {
@@ -119,7 +119,7 @@ function Booking() {
     try {
       // 1. Book the appointment (creates it with paymentStatus: "Pending")
       const bookingRes = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/availability/book`,
+        "http://localhost:5000/api/availability/book",
         {
           doctorId: selectedDoctor,
           date: formattedDate,
@@ -135,7 +135,7 @@ function Booking() {
 
       // 2. Create a Razorpay order
       const orderRes = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/payment/create-order`,
+        "http://localhost:5000/api/payment/create-order",
         {
           appointmentId: appointment._id,
           amount: appointment.amount,
@@ -151,7 +151,7 @@ function Booking() {
       const revertBooking = async () => {
         try {
           await axios.post(
-            `${process.env.REACT_APP_API_URL}/api/payment/revert`,
+            "http://localhost:5000/api/payment/revert",
             { appointmentId: createdAppointmentId },
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -173,7 +173,7 @@ function Booking() {
           try {
             // 4. Verify payment on backend
             await axios.post(
-              `${process.env.REACT_APP_API_URL}/api/payment/verify`,
+              "http://localhost:5000/api/payment/verify",
               {
                 appointmentId: appointment._id,
                 razorpay_order_id: response.razorpay_order_id,
@@ -222,7 +222,7 @@ function Booking() {
       if (createdAppointmentId) {
         try {
           await axios.post(
-            `${process.env.REACT_APP_API_URL}/api/payment/revert`,
+            "http://localhost:5000/api/payment/revert",
             { appointmentId: createdAppointmentId },
             { headers: { Authorization: `Bearer ${token}` } }
           );

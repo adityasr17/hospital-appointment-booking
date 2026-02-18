@@ -79,17 +79,17 @@ function Admin() {
   const fetchAnalytics = async () => {
     try {
       const revenueRes = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/admin/total-revenue`,
+        "http://localhost:5000/api/admin/total-revenue",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const monthlyRes = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/admin/monthly-revenue`,
+        "http://localhost:5000/api/admin/monthly-revenue",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const statsRes = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/admin/payment-stats`,
+        "http://localhost:5000/api/admin/payment-stats",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -103,7 +103,7 @@ function Admin() {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/auth/doctors`);
+      const res = await axios.get("http://localhost:5000/api/auth/doctors");
       setDoctors(res.data);
     } catch (err) {
       console.error("Failed to fetch doctors", err);
@@ -115,7 +115,7 @@ function Admin() {
     setDoctorMsg({ type: "", text: "" });
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/admin/register-doctor`,
+        "http://localhost:5000/api/admin/register-doctor",
         {
           name: doctorName,
           email: doctorEmail,
@@ -145,7 +145,7 @@ function Admin() {
     setAvailMsg({ type: "", text: "" });
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/admin/create-availability`,
+        "http://localhost:5000/api/admin/create-availability",
         {
           doctorId: selectedDoctor,
           date: availDate,
