@@ -38,7 +38,7 @@ function Doctor() {
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/doctor/appointments",
+        `${process.env.REACT_APP_API_URL}/api/doctor/appointments`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ function Doctor() {
   const fetchRevenue = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/doctor/revenue",
+        `${process.env.REACT_APP_API_URL}/api/doctor/revenue`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -72,7 +72,7 @@ function Doctor() {
   const markCompleted = async (appointmentId) => {
     try {
       await axios.post(
-        "http://localhost:5000/api/doctor/complete",
+        `${process.env.REACT_APP_API_URL}/api/doctor/complete`,
         { appointmentId },
         {
           headers: {

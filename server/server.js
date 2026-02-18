@@ -50,6 +50,15 @@ app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/doctor", require("./routes/doctorRoutes"));
 
+// Serve static assets in production
+if (process.env.NODE_ENV === "production") {
+  const path = require("path");
+  app.use(express.static(path.join(__dirname, "../client/build")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../client/build", "index.html"));
+  });
+}
 
 server.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
