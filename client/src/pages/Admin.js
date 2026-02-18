@@ -171,8 +171,13 @@ function Admin() {
     }
   };
 
+  const monthNames = [
+    "", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
   const monthlyData = {
-    labels: monthlyRevenue.map((item) => `Month ${item._id}`),
+    labels: monthlyRevenue.map((item) => monthNames[item._id] || `Month ${item._id}`),
     datasets: [
       {
         label: "Monthly Revenue",

@@ -25,7 +25,12 @@ function Navbar() {
     <nav className="bg-white/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 left-0 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
+            if (role === "patient") navigate("/booking");
+            else if (role === "doctor") navigate("/doctor");
+            else if (role === "admin") navigate("/admin");
+            else navigate("/");
+          }}>
              <span className="text-2xl">🏥</span>
              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                Hospital<span className="font-light text-gray-500">Booking</span>

@@ -1,189 +1,262 @@
-# 🏥 Hospital Appointment Booking System (MERN Stack)
+# 🏥 MedBook — Hospital Appointment Booking System
 
-A comprehensive, production-ready Hospital Appointment Booking System built using the MERN stack (MongoDB, Express.js, React, Node.js). This application enables patients to search for doctors, book appointments, and manage their health records, while allowing doctors to manage their schedules and appointments. It also includes an admin dashboard for overall system management.
+A full-stack Hospital Appointment Booking System built with the **MERN stack** (MongoDB, Express.js, React, Node.js). Patients can browse doctors, book time-slots in real time, and pay online. Doctors manage their schedules, and admins oversee the entire platform through an analytics dashboard.
 
-This project demonstrates advanced concepts like atomic database operations for booking, real-time updates using Socket.io, and secure payment integration with Razorpay.
+Key technical highlights include **real-time slot locking** via Socket.io, **atomic booking** with MongoDB, **Razorpay payment integration** with automatic booking revert on failure, and **role-based access control** (Patient / Doctor / Admin).
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-### 👨‍⚕️ Doctor Features
+### Patient
 
-- **Dashboard:** View upcoming appointments and patient details.
-- **Schedule Management:** Set available working hours and break times.
-- **Availability:** Automatic slot generation (15/30 mins) based on working hours.
-- **Profile Management:** Update specialization, fees, and contact info.
+- Browse doctors by specialization and consultation fee.
+- Pick a date, view available slots in real time, and lock a slot while completing payment.
+- Pay securely via Razorpay — booking is **automatically reverted** if payment fails or is dismissed.
+- Cancel upcoming appointments (slot is freed).
 
-### 👤 Patient Features
+### Doctor
 
-- **Doctor Search:** Filter doctors by specialization and availability.
-- **Appointment Booking:** Real-time slot selection and booking.
-- **Payments:** Secure online payments via Razorpay.
-- **History:** View past and upcoming appointments.
-- **Cancellations:** Cancel appointments with automatic refund processing (business logic).
+- View all upcoming and past appointments.
+- Mark appointments as completed.
+- Track personal revenue.
+- Set working hours and break times; the system auto-generates 15-min slots.
 
-### 🛡 Admin Features
+### Admin
 
-- **User Management:** Manage doctors and patients.
-- **System Overview:** View total bookings, revenue, and active users.
+- **Dashboard** — total revenue, monthly revenue bar chart, paid/pending doughnut chart, top doctor.
+- **Register Doctor** — create doctor accounts with specialization and consultation fee.
+- **Create Availability** — set schedule for any doctor (date, hours, break).
 
-### ⚙️ Technical Highlights
+### Technical
 
-- **Atomic Booking:** Prevents double-booking using MongoDB transactions/atomic operators.
-- **Real-time Updates:** Socket.io for instant notifications on booking status.
-- **Security:** JWT Authentication, HttpOnly cookies, and Role-Based Access Control (RBAC).
-- **Payment Gateway:** Razorpay integration for seamless transactions.
+| Concern        | Implementation                                                         |
+| -------------- | ---------------------------------------------------------------------- |
+| Authentication | JWT Bearer tokens, role-based middleware (`protect`, `authorize`)      |
+| Real-time      | Socket.io — slot lock/release events broadcast to all clients          |
+| Payments       | Razorpay order → checkout → verify; auto-revert on failure             |
+| Atomic booking | MongoDB `findOneAndUpdate` with `$elemMatch` to prevent double-booking |
+| Charts         | Chart.js (Bar + Doughnut) in the admin dashboard                       |
+| Animations     | Framer Motion throughout the UI                                        |
 
 ---
 
 ## 🛠 Tech Stack
 
-### Frontend (Client)
+### Frontend
 
-- **React.js** (v19)
-- **Tailwind CSS** (Styling)
-- **Framer Motion** (Animations)
-- **React Router DOM** (Navigation)
-- **Axios** (API Requests)
-- **Socket.io Client** (Real-time communication)
-- **Chart.js** (Data visualization)
+- **React 19** + React Router DOM v7
+- **Tailwind CSS** — utility-first styling
+- **Framer Motion** — page and slot animations
+- **Axios** — HTTP client
+- **Socket.io Client** — real-time slot locking
+- **Chart.js / react-chartjs-2** — admin analytics charts
+- **react-datepicker** — date selection
+- **jwt-decode** — client-side token inspection
 
-### Backend (Server)
+### Backend
 
-- **Node.js & Express.js**
-- **MongoDB Atlas** (Database)
-- **Mongoose** (ODM)
-- **JWT** (Authentication)
-- **Razorpay** (Payments)
-- **Socket.io** (WebSockets)
-
----
-
-## 🏗 Authorization & Roles
-
-The system uses three levels of authorization:
-
-1. **Admin:** Full access to managing users and system settings.
-2. **Doctor:** Can manage their own schedule and view their appointments.
-3. **Patient:** Can search doctors and book/manage their own appointments.
+- **Node.js** + **Express 5**
+- **MongoDB** (Atlas or local) via **Mongoose 9**
+- **JSON Web Tokens** (jsonwebtoken)
+- **Razorpay SDK** — payment orders and verification
+- **Socket.io** — WebSocket server
+- **bcryptjs** — password hashing
+- **dotenv** — environment config
+- **nodemon** — dev auto-restart
 
 ---
 
-## ⚙️ Installation & Setup Guide
+## 📂 Project Structure
 
-### 1. Prerequisites
+```
+hospital-booking/
+├── client/                     # React frontend
+│   ├── public/
+│   └── src/
+│       ├── components/
+│       │   └── Navbar.js       # Shared nav with role-aware routing
+│       ├── pages/
+│       │   ├── Login.js        # Patient / Doctor / Admin login
+│       │   ├── Register.js     # Patient registration
+│       │   ├── Booking.js      # Slot selection, locking & payment
+│       │   ├── Doctor.js       # Doctor dashboard
+│       │   └── Admin.js        # Admin dashboard (tabs)
+│       ├── App.js              # Route definitions
+│       └── index.js
+│
+├── server/                     # Express backend
+│   ├── config/
+│   │   ├── db.js               # MongoDB connection
+│   │   └── razorpay.js         # Razorpay instance
+│   ├── controllers/
+│   │   ├── authController.js   # Register / Login / List doctors
+│   │   ├── availabilityController.js  # Slots CRUD, book, cancel
+│   │   ├── paymentController.js       # Create order, verify, revert
+│   │   ├── adminController.js  # Revenue, stats, register doctor
+│   │   └── doctorController.js # Appointments, revenue, complete
+│   ├── middleware/
+│   │   └── authMiddleware.js   # protect & authorize
+│   ├── models/
+│   │   ├── User.js             # name, email, password, role, specialization, fee
+│   │   ├── Appointment.js      # patient, doctor, date, slot, amount, status, paymentStatus
+│   │   └── Availability.js     # doctor, date, slots[{time, isBooked}]
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── availabilityRoutes.js
+│   │   ├── paymentRoutes.js
+│   │   ├── adminRoutes.js
+│   │   └── doctorRoutes.js
+│   ├── scripts/
+│   │   ├── seedDoctor.js       # Seed sample doctor data
+│   │   └── cleanDoctors.js
+│   ├── utils/
+│   │   ├── slotGenerator.js    # Generate time slots from hours/breaks
+│   │   └── slotLocks.js        # In-memory slot lock store
+│   └── server.js               # App entry — Express + Socket.io
+│
+└── package.json
+```
 
-Ensure you have the following installed:
+---
 
-- [Node.js](https://nodejs.org/) (v14 or higher)
-- [MongoDB](https://www.mongodb.com/) (Local or Atlas)
-- [Git](https://git-scm.com/)
+## 🔌 API Reference
 
-### 2. Clone the Repository
+### Auth — `/api/auth`
+
+| Method | Endpoint    | Access | Description            |
+| ------ | ----------- | ------ | ---------------------- |
+| POST   | `/register` | Public | Register a new patient |
+| POST   | `/login`    | Public | Login (returns JWT)    |
+| GET    | `/doctors`  | Public | List all doctors       |
+
+### Availability — `/api/availability`
+
+| Method | Endpoint           | Access  | Description                               |
+| ------ | ------------------ | ------- | ----------------------------------------- |
+| POST   | `/`                | Doctor  | Create availability (date, hours, breaks) |
+| GET    | `/:doctorId/:date` | Public  | Get available slots                       |
+| POST   | `/book`            | Patient | Book a slot                               |
+| POST   | `/cancel`          | Patient | Cancel an appointment                     |
+
+### Payment — `/api/payment`
+
+| Method | Endpoint        | Access | Description                       |
+| ------ | --------------- | ------ | --------------------------------- |
+| POST   | `/create-order` | Auth   | Create a Razorpay order           |
+| POST   | `/verify`       | Auth   | Mark payment as Paid              |
+| POST   | `/revert`       | Auth   | Revert booking on payment failure |
+
+### Admin — `/api/admin`
+
+| Method | Endpoint               | Access | Description                  |
+| ------ | ---------------------- | ------ | ---------------------------- |
+| GET    | `/total-revenue`       | Admin  | Sum of all paid appointments |
+| GET    | `/payment-stats`       | Admin  | Paid vs Pending counts       |
+| GET    | `/monthly-revenue`     | Admin  | Revenue grouped by month     |
+| GET    | `/top-doctor`          | Admin  | Most booked doctor           |
+| POST   | `/register-doctor`     | Admin  | Create a doctor account      |
+| POST   | `/create-availability` | Admin  | Create slots for a doctor    |
+
+### Doctor — `/api/doctor`
+
+| Method | Endpoint        | Access | Description                   |
+| ------ | --------------- | ------ | ----------------------------- |
+| GET    | `/appointments` | Doctor | List doctor's appointments    |
+| GET    | `/revenue`      | Doctor | Doctor's total revenue        |
+| POST   | `/complete`     | Doctor | Mark appointment as completed |
+
+---
+
+## ⚙️ Setup & Installation
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v16+
+- [MongoDB](https://www.mongodb.com/) (local or Atlas)
+- [Razorpay account](https://razorpay.com/) (for payment keys)
+
+### 1. Clone the repository
 
 ```bash
 git clone <repository-url>
 cd hospital-booking
 ```
 
-### 3. Backend Setup (Server)
-
-Navigate to the server directory and install dependencies:
+### 2. Server
 
 ```bash
 cd server
 npm install
 ```
 
-#### Create Environment Variables
-
-Create a `.env` file in the `server/` directory and add the following keys:
+Create **`server/.env`**:
 
 ```env
-# Server Configuration
 PORT=5000
-
-# Database Configuration
-MONGO_URI=mongodb+srv://<your-username>:<your-password>@cluster0.mongodb.net/hospital-db?retryWrites=true&w=majority
-
-# JWT Authentication
-JWT_SECRET=your_super_secret_jwt_key_here
-
-# Razorpay Payment Gateway (Get these from Razorpay Dashboard)
+MONGO_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/hospital-db?retryWrites=true&w=majority
+JWT_SECRET=your_jwt_secret
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 ```
 
-#### Run the Server
-
 ```bash
-# Development mode (with nodemon)
-npm run dev
-
-# Production mode
-npm start
+npm run dev          # development (nodemon)
+# or
+npm start            # production
 ```
 
-_The server should now be running on `http://localhost:5000`_
+Server runs at **http://localhost:5000**.
 
-### 4. Frontend Setup (Client)
-
-Open a new terminal, navigate to the client directory, and install dependencies:
+### 3. Client
 
 ```bash
 cd client
 npm install
 ```
 
-#### Create Environment Variables
-
-Create a `.env` file in the `client/` directory and add the following keys:
+Create **`client/.env`**:
 
 ```env
-# Razorpay Key for Frontend
 REACT_APP_RAZORPAY_KEY_ID=your_razorpay_key_id
 ```
-
-_(Note: This key must match the Key ID used in the server .env)_
-
-#### Run the Client
 
 ```bash
 npm start
 ```
 
-_The application should open automatically at `http://localhost:3000`_
+App opens at **http://localhost:3000**.
 
----
-
-## 📂 Folder Structure
-
-### Backend (`/server`)
-
-- `config/` - Database and 3rd party service configurations.
-- `controllers/` - Logic for handling API requests.
-- `models/` - Mongoose schemas (User, Appointment, Doctor).
-- `routes/` - API endpoints definition.
-- `middleware/` - Auth and error handling middleware.
-- `utils/` - Helper functions (e.g., slot generator).
-
-### Frontend (`/client`)
-
-- `src/components/` - Reusable UI components.
-- `src/pages/` - Main views (Login, Dashboard, Booking).
-- `src/context/` - React Context APIs for state management.
-- `src/hooks/` - Custom React hooks.
-
----
-
-## 🧪 Seeding Data (Optional)
-
-If you need to create initial dummy doctor data with slots, you can use the script provided in `server/scripts/`.
+### 4. Seed data (optional)
 
 ```bash
-# From the server directory:
+cd server
 node scripts/seedDoctor.js
+```
+
+---
+
+## 🔐 Roles & Authorization
+
+| Role        | Default route | Capabilities                                           |
+| ----------- | ------------- | ------------------------------------------------------ |
+| **Patient** | `/booking`    | Book / cancel appointments, pay online                 |
+| **Doctor**  | `/doctor`     | View appointments, mark complete, track revenue        |
+| **Admin**   | `/admin`      | Full platform management, analytics, doctor onboarding |
+
+---
+
+## 💳 Payment Flow
+
+```
+Patient selects slot
+  → Slot locked (Socket.io)
+  → Appointment created (status: Pending)
+  → Razorpay order created
+  → Razorpay checkout opens
+      ├─ Payment succeeds → /verify → paymentStatus: Paid ✅
+      ├─ Payment fails    → /revert → appointment deleted, slot freed 🔄
+      └─ Modal dismissed  → /revert → appointment deleted, slot freed 🔄
 ```
 
 ---
@@ -191,9 +264,9 @@ node scripts/seedDoctor.js
 ## 🤝 Contributing
 
 1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -m 'Add YourFeature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
 5. Open a Pull Request
 
 ---
@@ -204,5 +277,5 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-Aditya Singh Rathaur  
+**Aditya Singh Rathaur**
 MERN Stack Developer

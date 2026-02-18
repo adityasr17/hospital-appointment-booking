@@ -114,6 +114,8 @@ function Booking() {
   const bookSlot = async () => {
     if (!selectedSlot) return;
 
+    let createdAppointmentId = null;
+
     try {
       // 1. Book the appointment (creates it with paymentStatus: "Pending")
       const bookingRes = await axios.post(
@@ -129,6 +131,7 @@ function Booking() {
       );
 
       const { appointment } = bookingRes.data;
+      createdAppointmentId = appointment._id;
 
       // 2. Create a Razorpay order
       const orderRes = await axios.post(
@@ -143,6 +146,20 @@ function Booking() {
       );
 
       const order = orderRes.data;
+
+      // Helper to revert the booking if payment is not completed
+      const revertBooking = async () => {
+        try {
+          await axios.post(
+            "http://localhost:5000/api/payment/revert",
+            { appointmentId: createdAppointmentId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } catch (revertErr) {
+          console.error("Failed to revert booking:", revertErr);
+        }
+        fetchSlots();
+      };
 
       // 3. Open Razorpay checkout
       const options = {
@@ -169,8 +186,10 @@ function Booking() {
             );
 
             alert("Payment successful! Appointment confirmed.");
+            fetchSlots();
           } catch (err) {
-            alert("Payment verification failed. Contact support.");
+            alert("Payment verification failed. Booking has been cancelled.");
+            await revertBooking();
           }
         },
         prefill: {
@@ -181,18 +200,37 @@ function Booking() {
           color: "#2563EB",
         },
         modal: {
-          ondismiss: function () {
-            alert("Payment was not completed. Your appointment is booked but unpaid.");
+          ondismiss: async function () {
+            alert("Payment was not completed. Booking has been cancelled.");
+            await revertBooking();
           },
         },
       };
 
       const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", async function () {
+        alert("Payment failed. Booking has been cancelled.");
+        await revertBooking();
+      });
+
       rzp.open();
 
-      fetchSlots();
       setSelectedSlot(null);
     } catch (err) {
+      // If booking was created but order creation failed, revert it
+      if (createdAppointmentId) {
+        try {
+          await axios.post(
+            "http://localhost:5000/api/payment/revert",
+            { appointmentId: createdAppointmentId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } catch (revertErr) {
+          console.error("Failed to revert booking:", revertErr);
+        }
+        fetchSlots();
+      }
       alert("Booking failed. Please try again.");
     }
   };
