@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Booking from "./pages/Booking";
 import Doctor from "./pages/Doctor";
 import Admin from "./pages/Admin";
+import PatientDashboard from "./pages/PatientDashboard";
 
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/patient" element={<PatientDashboard />} />
         <Route path="/doctor" element={<Doctor />} />
         <Route path="/admin" element={<Admin />} />
 

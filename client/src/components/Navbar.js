@@ -26,7 +26,7 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
-            if (role === "patient") navigate("/booking");
+            if (role === "patient") navigate("/patient");
             else if (role === "doctor") navigate("/doctor");
             else if (role === "admin") navigate("/admin");
             else navigate("/");
@@ -39,12 +39,20 @@ function Navbar() {
 
           <div className="flex gap-4 items-center">
             {role === "patient" && (
-              <button 
-                onClick={() => navigate("/booking")}
-                className="text-gray-600 hover:text-blue-600 font-medium transition"
-              >
-                Book Appointment
-              </button>
+              <>
+                <button 
+                  onClick={() => navigate("/patient")}
+                  className="text-gray-600 hover:text-blue-600 font-medium transition"
+                >
+                  My Dashboard
+                </button>
+                <button 
+                  onClick={() => navigate("/booking")}
+                  className="text-gray-600 hover:text-blue-600 font-medium transition"
+                >
+                  Book Appointment
+                </button>
+              </>
             )}
 
             {role === "doctor" && (

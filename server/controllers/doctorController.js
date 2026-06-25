@@ -70,3 +70,54 @@ exports.completeAppointment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 4️⃣ Get doctor's schedule for a specific date (with patient details)
+exports.getDoctorScheduleByDate = async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date query param is required" });
+    }
+
+    const appointments = await Appointment.find({
+      doctorId: req.user.id,
+      date: date
+    })
+      .populate("patientId", "name email")
+      .sort({ slotTime: 1 });
+
+    res.json(appointments);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 5️⃣ Mark appointment as No Show
+exports.markNoShow = async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+
+    const appointment = await Appointment.findOneAndUpdate(
+      {
+        _id: appointmentId,
+        doctorId: req.user.id
+      },
+      {
+        status: "No Show"
+      },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.json({ message: "Appointment marked as No Show", appointment });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

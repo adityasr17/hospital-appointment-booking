@@ -65,8 +65,8 @@ exports.getMonthlyRevenue = async (req, res) => {
   }
 };
 
-// 4️⃣ Most Booked Doctor
-exports.getMostBookedDoctor = async (req, res) => {
+// 4️⃣ Top 5 Most Booked Doctors
+exports.getTopDoctors = async (req, res) => {
   try {
     const result = await Appointment.aggregate([
       {
@@ -76,10 +76,66 @@ exports.getMostBookedDoctor = async (req, res) => {
         }
       },
       { $sort: { totalAppointments: -1 } },
-      { $limit: 1 }
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "doctor"
+        }
+      },
+      { $unwind: "$doctor" },
+      {
+        $project: {
+          _id: 1,
+          totalAppointments: 1,
+          doctorName: "$doctor.name",
+          specialization: "$doctor.specialization"
+        }
+      }
     ]);
 
-    res.json(result[0] || {});
+    res.json(result);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 5️⃣ User Growth Over Time (monthly patient registrations)
+exports.getUserGrowth = async (req, res) => {
+  try {
+    const result = await User.aggregate([
+      { $match: { role: "patient" } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    res.json(result);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 6️⃣ Get All Appointments (with patient & doctor names)
+exports.getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate("patientId", "name email")
+      .populate("doctorId", "name specialization")
+      .sort({ createdAt: -1 });
+
+    res.json(appointments);
 
   } catch (error) {
     res.status(500).json({ message: error.message });

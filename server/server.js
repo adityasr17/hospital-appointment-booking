@@ -49,6 +49,7 @@ app.use("/api/availability", require("./routes/availabilityRoutes"));
 app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/doctor", require("./routes/doctorRoutes"));
+app.use("/api/patient", require("./routes/patientRoutes"));
 
 
 server.listen(PORT, () =>
