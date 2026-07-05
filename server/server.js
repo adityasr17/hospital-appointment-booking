@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const { lockSlot, releaseSlot, getLock } = require("./utils/slotLocks");
+const { lockSlot, releaseSlot, getLock, setIO } = require("./utils/slotLocks");
 
 
 connectDB();
@@ -21,6 +21,7 @@ const io = new Server(server, {
 });
 
 app.set("io", io);
+setIO(io);
 
 io.on("connection", (socket) => {
   socket.on("lockSlot", ({ doctorId, date, slotTime, userId }) => {
@@ -31,7 +32,12 @@ io.on("connection", (socket) => {
       return;
     }
 
-    lockSlot(key, userId);
+    const locked = lockSlot(key, userId);
+
+    if (!locked) {
+      socket.emit("lockFailed", { message: "Slot already locked" });
+      return;
+    }
 
     io.emit("slotLocked", { doctorId, date, slotTime });
 
@@ -51,6 +57,13 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/doctor", require("./routes/doctorRoutes"));
 app.use("/api/patient", require("./routes/patientRoutes"));
 
+// Global error-handling middleware (must be last)
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err.stack || err.message);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal Server Error",
+  });
+});
 
 server.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)

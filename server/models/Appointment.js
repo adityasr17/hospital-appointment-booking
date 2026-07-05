@@ -17,6 +17,10 @@ const appointmentSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  razorpayOrderId: {
+    type: String,
+    default: null,
+  },
   status: {
     type: String,
     enum: ["Booked", "Cancelled", "Completed", "No Show"],

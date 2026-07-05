@@ -141,7 +141,11 @@ exports.cancelAppointment = async (req, res) => {
     appointment.status = "Cancelled";
     await appointment.save();
 
-    res.json({ message: "Appointment cancelled successfully" });
+    const message = appointment.paymentStatus === "Paid"
+      ? "Appointment cancelled. Refund will be processed."
+      : "Appointment cancelled successfully.";
+
+    res.json({ message });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
